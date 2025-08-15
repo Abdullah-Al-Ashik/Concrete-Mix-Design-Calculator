@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Concrete Mix Design Calculator — Abdullah Al Ashik</title>
+  <meta name="description" content="Concrete mix design calculator (nominal mix) by Abdullah Al Ashik — simple, fast, and printable report." />
+  <style>
+
+input, select, textarea {
+    border: 1px solid #00bcd4 !important; /* Pool color */
+    padding: 6px !important;
+    border-radius: 4px !important;
+    background-color: #000 !important;  /* Black theme */
+    color: #fff !important;              /* White text */
+    outline: none !important;
+}
+
+input::placeholder, textarea::placeholder {
+    color: #aaa !important; /* Light gray placeholder */
+}
+
+
+    :root{
+      --pool:#00bcd4;
+      --bg:#0b0f10;
+      --card:#12181b;
+      --text:#e6f6f8;
+      --muted:#8fbcc3;
+      --border:#1e2a2f;
+      --success:#00d49a;
+      --danger:#ff557a;
+      --warning:#ffd166;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;letter-spacing:.2px}
+    a{color:var(--pool);text-decoration:none}
+    .container{max-width:1100px;margin:24px auto;padding:0 16px}
+    .app{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:20px;
+    }
+    @media (max-width: 980px){ .app{grid-template-columns:1fr} }
+    .card{
+      background:linear-gradient(180deg, rgba(0,188,212,.05), transparent 120%), var(--card);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:18px;
+      box-shadow:0 8px 24px rgba(0,0,0,.25);
+    }
+    .header{
+      display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;
+    }
+    .brand{display:flex;align-items:center;gap:12px}
+    .creator-photo{
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid white;
+}
+    .title-wrap{display:flex;flex-direction:column}
+    .name{font-weight:700;font-size:18px;color:var(--pool)}
+    .subtitle{font-size:13px;color:var(--muted)}
+    h1{font-size:22px;margin:0;color:var(--text)}
+    h2{font-size:16px;margin:0 0 12px;color:var(--pool)}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media (max-width:700px){.row{grid-template-columns:1fr}}
+    label{font-size:13px;color:var(--muted);display:block;margin:8px 0 6px}
+    input,select{
+      width:100%;padding:12px 12px;border-radius:12px;border:1px solid var(--border);
+      background:#0f1417;color:var(--text);outline:none;
+    }
+    input:focus,select:focus{border-color:var(--pool);box-shadow:0 0 0 4px rgba(0,188,212,.12)}
+    .hint{font-size:12px;color:var(--muted);margin-top:4px}
+    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    .btn{
+      border:none;padding:12px 16px;border-radius:12px;cursor:pointer;font-weight:600;
+      background:var(--pool);color:#001317;transition:.2s;
+    }
+    .btn.secondary{background:transparent;color:var(--pool);border:1px solid var(--pool)}
+    .btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+    .btn:active{transform:translateY(1px)}
+    .pill{
+      display:inline-block;padding:6px 10px;border-radius:999px;
+      background:rgba(0,188,212,.12);color:var(--pool);font-size:12px;border: 1px solid #00bcd4
+    }
+    .kpi{
+      display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:8px
+    }
+    @media (max-width:700px){.kpi{grid-template-columns:1fr}}
+    .kcard{padding:12px;border-radius:12px;border:1px dashed var(--border);background:#0e1316}
+    .klabel{font-size:12px;color:var(--muted)}
+    .kvalue{font-size:18px;font-weight:800;margin-top:4px}
+    .divider{height:1px;background:var(--border);margin:14px 0}
+    .small{font-size:12px;color:var(--muted)}
+    .footer{margin-top:10px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+    .note{font-size:11.5px;color:var(--muted)}
+    /* Printable report */
+    @media print{
+      body{background:#fff;color:#000}
+      .no-print{display:none !important}
+      .print-wrap{
+        display:block !important;
+        color:#111;
+        font-family:Inter,Arial,sans-serif;
+      }
+      .print-card{
+        border:1px solid #999;border-radius:8px;padding:14px;margin-bottom:10px
+      }
+      .print-table{width:100%;border-collapse:collapse;margin-top:8px}
+      .print-table th,.print-table td{border:1px solid #999;padding:6px 8px;text-align:left;font-size:12px}
+      .print-title{font-size:18px;font-weight:800;margin:0 0 8px}
+      .print-sub{font-size:12px;color:#333}
+    }
+    /* Badge */
+    .badge{display:inline-flex;align-items:center;gap:8px}
+    .dot{width:8px;height:8px;border-radius:50%;background:var(--success);box-shadow:0 0 0 4px rgba(0,212,154,.14)}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Top Brand -->
+    <div class="card">
+      <div class="header">
+        <div class="brand">
+          <!-- Put your photo in /images/ashik.jpg -->
+          <img src="images/ashik.jpg" alt="Abdullah Al Ashik" class="creator-photo" />
+          <div class="title-wrap">
+            <span class="name">Abdullah Al Ashik</span>
+            <span class="subtitle">Concrete Mix Design Calculator (Nominal Mix · Simple Proportion)</span>
+          </div>
+        </div>
+        <div class="badge">
+        
+      
+        </div>
+      </div>
+
+      <div class="app">
+        <!-- INPUTS -->
+        <div class="card">
+          <h1>Inputs</h1>
+          <p class="small">Quick nominal mix method using wet→dry factor and default bulk densities. You can edit any default.</p>
+
+          <label for="mix">Grade (Nominal Ratio)</label>
+          <select id="mix">
+            <option value="1:1.5:3" selected>M20 — 1 : 1.5 : 3</option>
+            <option value="1:2:4">M15 — 1 : 2 : 4</option>
+            <option value="1:3:6">M10 — 1 : 3 : 6</option>
+            <option value="1:4:8">M7.5 — 1 : 4 : 8</option>
+            <option value="1:5:10">M5 — 1 : 5 : 10</option>
+            <option value="custom">Custom…</option>
+          </select>
+
+          <div id="customRatioWrap" style="display:none" class="row">
+            <div>
+              <label for="ratioC">Cement (parts)</label>
+              <input type="number" step="0.01" id="ratioC" value="1">
+            </div>
+            <div>
+              <label for="ratioF">Sand (parts)</label>
+              <input type="number" step="0.01" id="ratioF" value="1.5">
+            </div>
+            <div>
+              <label for="ratioA">Aggregate (parts)</label>
+              <input type="number" step="0.01" id="ratioA" value="3">
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="volume">Concrete Volume (m³)</label>
+              <input type="number" step="0.001" id="volume" value="1.0">
+              <div class="hint">Wet volume of concrete required.</div>
+            </div>
+            <div>
+              <label for="wcr">Water–Cement Ratio (w/c)</label>
+              <input type="number" step="0.01" id="wcr" value="0.5">
+              <div class="hint">Water (kg) = w/c × Cement (kg).</div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="dryFactor">Wet → Dry Volume Factor</label>
+              <input type="number" step="0.01" id="dryFactor" value="1.54">
+              <div class="hint">Typical 1.52–1.57 to account for voids/wastage.</div>
+            </div>
+            <div>
+              <label for="wastage">Extra Wastage (%)</label>
+              <input type="number" step="0.1" id="wastage" value="2.0">
+              <div class="hint">Optional extra margin.</div>
+            </div>
+          </div>
+
+          <h2>Material Bulk Densities</h2>
+          <div class="row">
+            <div>
+              <label for="denCem">Cement Density (kg/m³)</label>
+              <input type="number" step="1" id="denCem" value="1440">
+            </div>
+            <div>
+              <label for="denSand">Sand Density (kg/m³)</label>
+              <input type="number" step="1" id="denSand" value="1550">
+            </div>
+            <div>
+              <label for="denAgg">Coarse Aggregate Density (kg/m³)</label>
+              <input type="number" step="1" id="denAgg" value="1500">
+            </div>
+            <div>
+              <label for="bagSize">Cement Bag Size (kg)</label>
+              <input type="number" step="1" id="bagSize" value="50">
+            </div>
+          </div>
+
+          <div class="btns">
+            <button class="btn" id="calcBtn">Calculate</button>
+            <button class="btn secondary" id="resetBtn">Reset</button>
+          </div>
+        </div>
+
+        <!-- OUTPUTS -->
+        <div class="card" id="resultsCard" aria-live="polite">
+          <h1>Results</h1>
+          <div class="pill">Calculated values appear here after you hit Calculate</div>
+
+          <div class="kpi" id="kpis" style="display:none">
+            <div class="kcard">
+              <div class="klabel">Dry Volume (m³)</div>
+              <div class="kvalue" id="dryVolOut">—</div>
+            </div>
+            <div class="kcard">
+              <div class="klabel">Total Parts</div>
+              <div class="kvalue" id="partsOut">—</div>
+            </div>
+            <div class="kcard">
+              <div class="klabel">Cement (kg) / Bags</div>
+              <div class="kvalue" id="cementOut">—</div>
+            </div>
+            <div class="kcard">
+              <div class="klabel">Water (litres)</div>
+              <div class="kvalue" id="waterOut">—</div>
+            </div>
+            <div class="kcard">
+              <div class="klabel">Sand (kg)</div>
+              <div class="kvalue" id="sandOut">—</div>
+            </div>
+            <div class="kcard">
+              <div class="klabel">Coarse Aggregate (kg)</div>
+              <div class="kvalue" id="aggOut">—</div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="footer no-print">
+            <div class="note">Tip: Use “Download PDF” to save a professional report of this calculation.</div>
+            <div class="btns">
+              <button class="btn ghost" id="viewReportBtn" disabled>Preview Report</button>
+              <button class="btn" id="pdfBtn" disabled>Download PDF</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="small" style="margin-top:10px">
+        Disclaimer: This is a AI-assisted build quick nominal mix estimator for educational. For construction, verify with relevant standards, lab tests, and professional oversight.
+      </p>
+    </div>
+
+    <!-- PRINTABLE REPORT (hidden on screen) -->
+    <div id="printArea" class="print-wrap" style="display:none">
+      <div class="print-card">
+        <div class="print-title">Concrete Mix Design Report (Nominal Mix)</div>
+        <div class="print-sub">Prepared by: <strong>Abdullah Al Ashik</strong></div>
+        <div class="print-sub" id="reportDate"></div>
+      </div>
+
+      <div class="print-card">
+        <strong>Inputs</strong>
+        <table class="print-table" id="inputsTable"></table>
+      </div>
+
+      <div class="print-card">
+        <strong>Outputs</strong>
+        <table class="print-table" id="outputsTable"></table>
+      </div>
+
+      <div class="print-card">
+        <em style="font-size:11px">
+          Notes: Wet→dry factor accounts for voids and handling. Densities are editable assumptions. Water ≈ w/c × cement (kg).
+        </em>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id)=>document.getElementById(id);
+
+    const mix = $("mix");
+    const customRatioWrap = $("customRatioWrap");
+    const ratioC = $("ratioC");
+    const ratioF = $("ratioF");
+    const ratioA = $("ratioA");
+
+    const volume = $("volume");
+    const wcr = $("wcr");
+    const dryFactor = $("dryFactor");
+    const wastage = $("wastage");
+
+    const denCem = $("denCem");
+    const denSand = $("denSand");
+    const denAgg = $("denAgg");
+    const bagSize = $("bagSize");
+
+    const calcBtn = $("calcBtn");
+    const resetBtn = $("resetBtn");
+    const viewReportBtn = $("viewReportBtn");
+    const pdfBtn = $("pdfBtn");
+
+    const kpis = $("kpis");
+    const dryVolOut = $("dryVolOut");
+    const partsOut = $("partsOut");
+    const cementOut = $("cementOut");
+    const waterOut = $("waterOut");
+    const sandOut = $("sandOut");
+    const aggOut = $("aggOut");
+
+    const printArea = $("printArea");
+    const inputsTable = $("inputsTable");
+    const outputsTable = $("outputsTable");
+    const reportDate = $("reportDate");
+
+    // Show/Hide custom ratio inputs
+    mix.addEventListener("change", ()=>{
+      customRatioWrap.style.display = (mix.value === "custom") ? "grid" : "none";
+      if(mix.value !== "custom"){
+        const [c,f,a] = mix.value.split(":").map(Number);
+        ratioC.value=c; ratioF.value=f; ratioA.value=a;
+      }
+    });
+
+    // Seed custom ratio with selected (so users can tweak)
+    const seedFromSelect = ()=>{
+      const [c,f,a] = mix.value.split(":").map(Number);
+      if(!isNaN(c) && !isNaN(f) && !isNaN(a)){
+        ratioC.value=c; ratioF.value=f; ratioA.value=a;
+      }
+    };
+    seedFromSelect();
+
+    function safe(n){ return isFinite(n) && !isNaN(n) ? n : 0; }
+    function fmt(n, d=2){ return Number(n).toFixed(d); }
+
+    function compute(){
+      const V = Math.max(0, Number(volume.value));
+      const wcrVal = Math.max(0, Number(wcr.value));
+      const fDry = Math.max(1, Number(dryFactor.value));
+      const extraPct = Math.max(0, Number(wastage.value));
+
+      const dC = Math.max(1, Number(denCem.value));
+      const dS = Math.max(1, Number(denSand.value));
+      const dA = Math.max(1, Number(denAgg.value));
+      const bag = Math.max(1, Number(bagSize.value));
+
+      const cPart = Math.max(0.0001, Number(ratioC.value));
+      const fPart = Math.max(0.0001, Number(ratioF.value));
+      const aPart = Math.max(0.0001, Number(ratioA.value));
+      const totalParts = cPart + fPart + aPart;
+
+      // Dry volume incl. wastage
+      let Vdry = V * fDry;
+      if(extraPct>0) Vdry *= (1 + extraPct/100);
+
+      // Volumes by parts
+      const V_cem = Vdry * (cPart/totalParts);
+      const V_sand = Vdry * (fPart/totalParts);
+      const V_agg = Vdry * (aPart/totalParts);
+
+      // Masses using bulk densities
+      const m_cem = V_cem * dC;
+      const m_sand = V_sand * dS;
+      const m_agg = V_agg * dA;
+
+      // Bags and water
+      const bags = m_cem / bag;
+      const water = wcrVal * m_cem; // litres ~ kg
+
+      return {
+        V, wcrVal, fDry, extraPct, dC, dS, dA, bag,
+        cPart, fPart, aPart, totalParts,
+        Vdry, m_cem, m_sand, m_agg, bags, water
+      };
+    }
+
+    function updateUI(res){
+      kpis.style.display = "grid";
+      dryVolOut.textContent = fmt(res.Vdry,3);
+      partsOut.textContent = fmt(res.totalParts,2);
+      cementOut.textContent = `${fmt(res.m_cem,1)} kg  ·  ${fmt(res.bags,2)} bags`;
+      waterOut.textContent = `${fmt(res.water,0)} L`;
+      sandOut.textContent = `${fmt(res.m_sand,1)} kg`;
+      aggOut.textContent = `${fmt(res.m_agg,1)} kg`;
+
+      // Enable report buttons
+      viewReportBtn.disabled = false;
+      pdfBtn.disabled = false;
+    }
+
+    function buildReportTables(res){
+      // Stamp date
+      const d = new Date();
+      reportDate.textContent = `Date: ${d.toLocaleDateString()}  ${d.toLocaleTimeString()}`;
+
+      // Inputs table
+      inputsTable.innerHTML = `
+        <tr><th>Parameter</th><th>Value</th></tr>
+        <tr><td>Nominal Ratio (C:F:A)</td><td>${fmt(res.cPart,2)} : ${fmt(res.fPart,2)} : ${fmt(res.aPart,2)}  (Total ${fmt(res.totalParts,2)} parts)</td></tr>
+        <tr><td>Concrete Volume (wet)</td><td>${fmt(res.V,3)} m³</td></tr>
+        <tr><td>Wet → Dry Factor</td><td>${fmt(res.fDry,2)}</td></tr>
+        <tr><td>Extra Wastage</td><td>${fmt(res.extraPct,1)} %</td></tr>
+        <tr><td>Water–Cement Ratio</td><td>${fmt(res.wcrVal,2)}</td></tr>
+        <tr><td>Cement Density</td><td>${fmt(res.dC,0)} kg/m³</td></tr>
+        <tr><td>Sand Density</td><td>${fmt(res.dS,0)} kg/m³</td></tr>
+        <tr><td>Coarse Aggregate Density</td><td>${fmt(res.dA,0)} kg/m³</td></tr>
+        <tr><td>Cement Bag Size</td><td>${fmt(res.bag,0)} kg</td></tr>
+      `;
+
+      // Outputs table
+      outputsTable.innerHTML = `
+        <tr><th>Result</th><th>Value</th></tr>
+        <tr><td>Dry Volume</td><td>${fmt(res.Vdry,3)} m³</td></tr>
+        <tr><td>Cement</td><td>${fmt(res.m_cem,1)} kg  (${fmt(res.bags,2)} bags)</td></tr>
+        <tr><td>Water</td><td>${fmt(res.water,0)} litres</td></tr>
+        <tr><td>Sand</td><td>${fmt(res.m_sand,1)} kg</td></tr>
+        <tr><td>Coarse Aggregate</td><td>${fmt(res.m_agg,1)} kg</td></tr>
+      `;
+    }
+
+    calcBtn.addEventListener("click", ()=>{
+      if(mix.value !== "custom"){ seedFromSelect(); }
+      const res = compute();
+      updateUI(res);
+      buildReportTables(res);
+    });
+
+    viewReportBtn.addEventListener("click", ()=>{
+      printArea.style.display = "block";
+      window.scrollTo({top: document.body.scrollHeight, behavior:"smooth"});
+    });
+
+    pdfBtn.addEventListener("click", ()=>{
+      // Ensure latest values in report
+      const res = compute();
+      buildReportTables(res);
+      // Show only the print area in print, thanks to @media print CSS
+      printArea.style.display = "block";
+      window.print(); // Choose "Save as PDF" in the dialog
+    });
+
+    resetBtn.addEventListener("click", ()=>{
+      mix.value = "1:1.5:3";
+      customRatioWrap.style.display = "none";
+      volume.value = 1.0;
+      wcr.value = 0.5;
+      dryFactor.value = 1.54;
+      wastage.value = 2.0;
+      denCem.value = 1440;
+      denSand.value = 1550;
+      denAgg.value = 1500;
+      bagSize.value = 50;
+      seedFromSelect();
+      kpis.style.display = "none";
+      viewReportBtn.disabled = true;
+      pdfBtn.disabled = true;
+      printArea.style.display = "none";
+    });
+  </script>
+</body>
+</html>
